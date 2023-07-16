@@ -54,4 +54,4 @@ if __name__ == "__main__":
 
     domains = extract_domains_from_html(page_response)
     for domain in domains:
-        print(domains)
+        print(domain)
