@@ -1,4 +1,5 @@
 import re
+import argparse
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
@@ -43,7 +44,11 @@ def extract_domains_from_html(html_content):
     return domains
 
 if __name__ == "__main__":
-    target_url = "https://bgp.he.net/net/104.21.0.0/19#_dns" 
+    parser = argparse.ArgumentParser(description="Extract domains from a target URL.")
+    parser.add_argument("target_url", help="The URL to extract domains from.")
+    args = parser.parse_args()
+
+    target_url = args.target_url
     page_response = get_page_response_with_selenium(target_url)
 
     extracted_domains = extract_domains_from_html(page_response)
