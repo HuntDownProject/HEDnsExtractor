@@ -1,6 +1,9 @@
+import re
 import argparse
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from bs4 import BeautifulSoup
+
 
 def get_page_response_with_selenium(url):
     user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
@@ -27,6 +30,20 @@ def get_page_response_with_selenium(url):
 
     return page_source
 
+def extract_domains_from_html(html_content):
+    domains = []
+
+    soup = BeautifulSoup(html_content, 'html.parser')
+    dns_links = soup.select('a[href^="/dns/"]')
+
+    for link in dns_links:
+        domain_match = re.finditer(r"\/dns\/(.+)", link['href'], re.MULTILINE)
+        for match in domain_match:
+            domain = match.group(1)
+            domains.append(domain)
+
+    return domains
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Get the page source using Selenium.")
     parser.add_argument("target_url", help="The target URL.")
@@ -35,4 +52,6 @@ if __name__ == "__main__":
     target_url = args.target_url
     page_response = get_page_response_with_selenium(target_url)
 
-    print(page_response)
+    domains = extract_domains_from_html(page_response)
+    for domain in domains:
+        print(domains)
