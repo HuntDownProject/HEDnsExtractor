@@ -2,6 +2,9 @@ import re
 import argparse
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 from bs4 import BeautifulSoup
 
 
@@ -13,16 +16,15 @@ def get_page_response_with_selenium(url):
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920x1080")
     chrome_options.add_argument(f"user-agent={user_agent}")
-
     chrome_options.add_argument("--enable-javascript")
-
     chrome_options.add_argument("--enable-cookies")
 
     driver = webdriver.Chrome(options=chrome_options)
 
     driver.get(url)
-
-    driver.implicitly_wait(10)
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, "div#netinfo"))
+    )
 
     page_source = driver.page_source
 
