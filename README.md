@@ -1,3 +1,8 @@
+
+#JSON Format output
+
+python3.10 HEDnsExtractor.py "https://bgp.he.net/net/81.82.0.0/15#_dns" --output-format json
+
 # example usage:
 1. Extract all domains and use httpx to search for specific value
    
