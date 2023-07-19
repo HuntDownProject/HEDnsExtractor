@@ -1,5 +1,6 @@
 import re
 import argparse
+import json
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -49,11 +50,19 @@ def extract_domains_from_html(html_content):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Get the page source using Selenium.")
     parser.add_argument("target_url", help="The target URL.")
+    parser.add_argument("--output-format", choices=["text", "json"], default="text", help="Output format (default: text)")
     args = parser.parse_args()
 
     target_url = args.target_url
     page_response = get_page_response_with_selenium(target_url)
 
     domains = extract_domains_from_html(page_response)
-    for domain in domains:
-        print(domain)
+
+    if args.output_format == "json":
+        # Output as JSON
+        domains_json = json.dumps(domains, indent=2)
+        print(domains_json)
+    else:
+        # Output as plain text
+        for domain in domains:
+            print(domain)
