@@ -7,6 +7,13 @@ from random import randint
 from time import sleep
 from fake_useragent import UserAgent
 
+CONFIG_FILE = "config.json"
+
+def load_config():
+    with open(CONFIG_FILE) as f:
+        config = json.load(f)
+    return config
+
 def get_page_response_with_requests(url):
     ua = UserAgent()
     headers = {
@@ -31,10 +38,28 @@ def extract_domains_from_html(html_content):
 
     return domains
 
+def consult_vt(domain, vt_api_key):
+    url = f"https://www.virustotal.com/api/v3/domains/{domain}"
+    headers = {
+        "x-apikey": vt_api_key,
+    }
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        vt_data = response.json()
+        attributes = vt_data.get("data", {}).get("attributes", {})
+        last_analysis_stats = attributes.get("last_analysis_stats")
+        if last_analysis_stats:
+            malicious = last_analysis_stats.get("malicious", 0)
+            suspicious = last_analysis_stats.get("suspicious", 0)
+            return int(malicious) + int(suspicious)
+    return None
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Get the page source using requests with cookies, JS support, and random User-Agent.")
     parser.add_argument("target_url", help="The target URL.")
     parser.add_argument("--output-format", choices=["text", "json"], default="text", help="Output format (default: text)")
+    parser.add_argument("--consult-vt", action="score_true", help="Query VirusTotal for domain scores.")
     args = parser.parse_args()
 
     target_url = args.target_url
@@ -46,6 +71,17 @@ if __name__ == "__main__":
         exit(1)
 
     domains = extract_domains_from_html(page_response)
+
+    config = load_config()
+    vt_api_key = config.get("vt_api_key")
+
+    if args.consult_vt and vt_api_key:
+        for domain in domains:
+            score = consult_vt(domain, vt_api_key)
+            if score is not None:
+                print(f"Domain: {domain}, VT Score: {score}")
+            else:
+                print(f"Domain: {domain}, VT Score: Not available (VT API key may be missing)")
 
     if args.output_format == "json":
         domains_json = json.dumps(domains, indent=2)
