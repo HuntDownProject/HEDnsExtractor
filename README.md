@@ -30,7 +30,7 @@ python HEDnsExtractor.py "https://bgp.he.net/net/104.21.0.0/19#_dns" | httpx -ti
   <img src="assets/sample.png">
 </p>
 
-2. Phishing Hunting
+# 2. Phishing Hunting
    <p align="center">
   <img src="assets/intelhed.jpeg">
 </p>
