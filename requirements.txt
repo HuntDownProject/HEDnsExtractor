@@ -1,5 +1,21 @@
-fake_useragent==0.1.11
-requests==2.26.0
-beautifulsoup4==4.9.3
-lxml==4.6.3
-fake_useragent
+beautifulsoup4==4.12.2 ; python_version >= "3.7" and python_version < "4.0" \
+    --hash=sha256:492bbc69dca35d12daac71c4db1bfff0c876c00ef4a2ffacce226d4638eb72da \
+    --hash=sha256:bd2520ca0d9d7d12694a53d44ac482d181b4ec1888909b035a3dbf40d0f57d4a
+fake-useragent==1.1.3 ; python_version >= "3.7" and python_version < "4.0" \
+    --hash=sha256:1c06f0aa7d6e4894b919b30b9c7ebd72ff497325191057fbb5df3d5db06b93fc \
+    --hash=sha256:695d3b1bf7d11d04ab0f971fb73b0ca8de98b78bbadfbc8bacbc9a48423f7531
+importlib-metadata==4.13.0 ; python_version >= "3.7" and python_version < "3.8" \
+    --hash=sha256:8a8a81bcf996e74fee46f0d16bd3eaa382a7eb20fd82445c3ad11f4090334116 \
+    --hash=sha256:dd0173e8f150d6815e098fd354f6414b0f079af4644ddfe90c71e2fc6174346d
+importlib-resources==5.12.0 ; python_version >= "3.7" and python_version < "3.10" \
+    --hash=sha256:4be82589bf5c1d7999aedf2a45159d10cb3ca4f19b2271f8792bc8e6da7b22f6 \
+    --hash=sha256:7b1deeebbf351c7578e09bf2f63fa2ce8b5ffec296e0d349139d43cca061a81a
+soupsieve==2.4.1 ; python_version >= "3.7" and python_version < "4.0" \
+    --hash=sha256:1c1bfee6819544a3447586c889157365a27e10d88cde3ad3da0cf0ddf646feb8 \
+    --hash=sha256:89d12b2d5dfcd2c9e8c22326da9d9aa9cb3dfab0a83a024f05704076ee8d35ea
+typing-extensions==4.7.1 ; python_version >= "3.7" and python_version < "3.8" \
+    --hash=sha256:440d5dd3af93b060174bf433bccd69b0babc3b15b1a8dca43789fd7f61514b36 \
+    --hash=sha256:b75ddc264f0ba5615db7ba217daeb99701ad295353c45f9e95963337ceeeffb2
+zipp==3.15.0 ; python_version >= "3.7" and python_version < "3.10" \
+    --hash=sha256:112929ad649da941c23de50f356a2b5570c954b65150642bccdd66bf194d224b \
+    --hash=sha256:48904fc76a60e542af151aded95726c1a5c34ed43ab4134b597665c86d7ad556
