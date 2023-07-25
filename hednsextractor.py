@@ -1,19 +1,22 @@
 import re
-import argparse
 import json
 import requests
 from bs4 import BeautifulSoup
-from random import randint
-from time import sleep
 from fake_useragent import UserAgent
 from datetime import datetime
+import typer
+from typing import Tuple, List
 
 CONFIG_FILE = "config.json"
+
+app = typer.Typer()
+
 
 def load_config():
     with open(CONFIG_FILE) as f:
         config = json.load(f)
     return config
+
 
 def get_page_response_with_requests(url):
     ua = UserAgent()
@@ -25,6 +28,7 @@ def get_page_response_with_requests(url):
     response = session.get(url)
     response.raise_for_status()
     return response.text
+
 
 def extract_domains_from_html(html_content):
     domains = []
@@ -39,6 +43,7 @@ def extract_domains_from_html(html_content):
 
     return domains
 
+
 def convert_timestamp_to_date(timestamp):
     try:
         timestamp_int = int(timestamp)
@@ -46,11 +51,10 @@ def convert_timestamp_to_date(timestamp):
     except (ValueError, TypeError):
         return "Not available"
 
-def consult_vt(domain, vt_api_key):
+
+def query_vt(domain, vt_api_key):
     url = f"https://www.virustotal.com/api/v3/domains/{domain}"
-    headers = {
-        "x-apikey": vt_api_key,
-    }
+    headers = { "x-apikey": vt_api_key}
     response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
@@ -65,16 +69,12 @@ def consult_vt(domain, vt_api_key):
             suspicious = last_analysis_stats.get("suspicious", 0)
             last_analysis_date_str = convert_timestamp_to_date(last_analysis_date)
             return int(malicious) + int(suspicious), category, last_analysis_date_str
-    return None, category, "Not available"
+    return None, "", "Not available"
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Get the page source using requests with cookies, JS support, and random User-Agent.")
-    parser.add_argument("target_url", help="The target URL.")
-    parser.add_argument("--output-format", choices=["text", "json"], default="text", help="Output format (default: text)")
-    parser.add_argument("--consult-vt", action="store_true", help="Query VirusTotal for domain scores.")
-    args = parser.parse_args()
 
-    target_url = args.target_url
+@app.command()
+def domains(ip_range: str, consult_vt: bool = False, json_dump : bool = False):
+    target_url = f"https://bgp.he.net/net/{ip_range}#_dns"
 
     try:
         page_response = get_page_response_with_requests(target_url)
@@ -84,22 +84,47 @@ if __name__ == "__main__":
 
     domains = extract_domains_from_html(page_response)
 
-    config = load_config()
-    vt_api_key = config.get("vt_api_key")
+    listof_tuples : List[Tuple] = []
 
-    if args.consult_vt and vt_api_key:
+    if consult_vt:
+        config = load_config()
+        vt_api_key = config.get("vt_api_key")
+        if not vt_api_key:
+            return  # TODO: logar erro
+        
         for domain in domains:
-            score, categories, last_analysis_date = consult_vt(domain, vt_api_key)
-            if score is not None:
-                print(f"Domain: {domain}, VT Score: {score}, Last Analysis Date: {last_analysis_date}")
-            else:
-                print(f"Domain: {domain}, VT Score: Not available (VT API key may be missing)")
-
-    if args.output_format == "json":
-        domains_json = json.dumps(domains, indent=2)
-        print(domains_json)
+            score, categories, last_analysis_date = query_vt(domain, vt_api_key)
+            listof_tuples.append((domain, score, categories, last_analysis_date))
     else:
         for domain in domains:
-            print(domain)
+            listof_tuples.append((domain, 0, {}, ""))
 
-    sleep(randint(1, 3))
+    if not json_dump:
+        for domain, score, categories, last_analysis_date in listof_tuples:
+            log_raw(domain, score, categories, last_analysis_date)
+    else:
+        log_json(ip_range, listof_tuples)
+
+
+def log_json(ip_range: str, domains: List):
+    doc = {'ip_range': ip_range, 'domains': []}
+    for domain, score, categories, last_analysis_date in domains:
+        item = {
+            'domain': domain,
+            'score': score,
+            'categories': categories,
+            'last_analysis_date': last_analysis_date
+        }
+        doc['domains'].append(item)
+    output = json.dumps(doc)
+    print(output)
+
+def log_raw(domain: str, score: int, categories: dict, last_analysis_date: str):
+    if score is not None:
+        print(f"Domain: {domain}, VT Score: {score}, category: {categories}, Last Analysis Date: {last_analysis_date}")
+    else:
+        print(f"Domain: {domain}, VT Score: Not available (VT API key may be missing)")
+
+
+if __name__ == "__main__":
+    app()
