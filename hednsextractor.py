@@ -43,6 +43,18 @@ def extract_domains_from_html(html_content):
 
     return domains
 
+def extract_networks_from_html(html_content):
+    domains = []
+    soup = BeautifulSoup(html_content, 'lxml')
+    dns_links = soup.select('a[href^="/net/"]')
+
+    for link in dns_links:
+        domain_match = re.finditer(r'/net/(.*)', link['href'], re.MULTILINE)
+        for match in domain_match:
+            domain = match.group(1)
+            domains.append(domain)
+
+    return domains
 
 def convert_timestamp_to_date(timestamp):
     try:
@@ -71,6 +83,19 @@ def query_vt(domain, vt_api_key):
             return int(malicious) + int(suspicious), category, last_analysis_date_str
     return None, "", "Not available"
 
+
+@app.command()
+def networks(ip_address: str):
+    target_url = f"https://bgp.he.net/ip/{ip_address}"
+    try:
+        page_response = get_page_response_with_requests(target_url)
+    except requests.exceptions.RequestException as e:
+        print(f"Error: {e}")
+        exit(1)
+
+    networks = extract_networks_from_html(page_response)
+    for network in networks:
+        print(network)
 
 @app.command()
 def domains(ip_range: str, consult_vt: bool = False, json_dump : bool = False):
