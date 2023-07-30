@@ -1,0 +1,55 @@
+name: 🔨 Build Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+      - feature*
+    paths:
+      - '**.go'
+      - '**.mod'
+jobs:
+  build:
+    name: Test Builds
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macOS-12 ]
+        go-version: [ 1.19.x, 1.20.x ]
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Build
+        run: go build .
+        working-directory: cmd/hednsextractor/
+
+      - name: Test
+        run: go test ./...
+        working-directory: .
+
+      #- name: Integration Tests
+      #  env:
+      #    GH_ACTION: true
+      #  run: bash run.sh
+      #  working-directory: integration_tests/
+
+      - name: Install
+        run: go install
+        working-directory: cmd/hednsextractor/
+
+      - name: Race Condition Tests
+        run: go build -race .
+        working-directory: cmd/hednsextractor/
+
+      
