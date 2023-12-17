@@ -7,7 +7,7 @@
   Raw html extractor from Hurricane Electric portal
 </p>
 <p align="center">
-  <a href="https://python.org/">
+  <a href="https://go.dev/">
     <img src="https://img.shields.io/github/go-mod/go-version/HuntDownProject/hednsextractor">
   </a>
     <a href="https://opensource.org">

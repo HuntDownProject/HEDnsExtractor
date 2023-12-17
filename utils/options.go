@@ -9,6 +9,7 @@ type options struct {
 	VtscoreValue string
 	VtApiKey     string
 	Target       string
+	Domain       string
 }
 
 var OptionCmd = &options{}
