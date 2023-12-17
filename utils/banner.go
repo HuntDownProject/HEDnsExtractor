@@ -15,7 +15,7 @@ var banner = `
 |/     \|(_______/(______/ |/    )_)\_______)(_______/|/     \|   )_(   |/   \__/|/     \|(_______/   )_(   (_______)|/   \__/
 `
 
-var version = "v1.0.1"
+var version = "v1.0.2"
 
 func ShowBanner(silent bool) {
 	if !silent {

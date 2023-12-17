@@ -1,24 +1,15 @@
 package main
 
 import (
-	"bufio"
 	"github.com/HuntDownProject/hednsextractor/utils"
 	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/gologger/levels"
-	fileutil "github.com/projectdiscovery/utils/file"
-	"os"
-	"strconv"
 )
 
 func main() {
 
-	if fileutil.HasStdin() {
-		s := bufio.NewScanner(os.Stdin)
-		for s.Scan() {
-			utils.IdentifyTarget(s.Text())
-		}
-	}
+	utils.ParseStdin()
 
 	flagSet := goflags.NewFlagSet()
 	flagSet.SetDescription("HEDnsExtractor - Raw html extractor from Hurricane Electric portal!")
@@ -45,29 +36,13 @@ func main() {
 		gologger.DefaultLogger.SetMaxLevel(levels.LevelInfo)
 	}
 
+	// Show Banner
 	utils.ShowBanner(utils.OptionCmd.Silent)
 
+	// Look into target parameter to grab the IPv4s and Networks
 	if utils.OptionCmd.Target != "" {
 		utils.IdentifyTarget(utils.OptionCmd.Target)
 	}
 
-	if len(utils.Hosts) > 0 {
-		for i := range utils.Hosts {
-			utils.ExtractNetwork(
-				utils.Hosts[i],
-				utils.OptionCmd.Silent,
-				utils.OptionCmd.Onlydomains,
-				utils.OptionCmd.Onlynetworks)
-		}
-	}
-
-	if len(utils.Networks) > 0 && !utils.OptionCmd.Onlynetworks {
-		for i := range utils.Networks {
-			if score, err := strconv.ParseUint(utils.OptionCmd.VtscoreValue, 10, 64); err == nil {
-				utils.ExtractDomains(utils.Networks[i], utils.OptionCmd.Silent, utils.OptionCmd.Vtscore, score)
-			} else {
-				gologger.Fatal().Msg("Invalid parameter value for vt-score")
-			}
-		}
-	}
+	utils.RunCrawler()
 }
