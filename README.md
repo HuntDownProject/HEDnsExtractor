@@ -30,7 +30,7 @@ go install -v github.com/HuntDownProject/hednsextractor/cmd/hednsextractor@lates
 ## Usage
 
 ```bash
-usage -h
+hednsextractor -h
 ```
 
 ```
