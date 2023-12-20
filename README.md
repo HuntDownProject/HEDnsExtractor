@@ -4,7 +4,7 @@
 
 <h1 align="center">HEDnsExtractor</h1>
 <p align="center">
-  Raw html extractor from Hurricane Electric portal
+  A suite for hunting suspicious targets, expose domains and phishing discovery
 </p>
 <p align="center">
   <a href="https://go.dev/">
@@ -17,9 +17,14 @@
 
 ## Features
 
-- Automatically identify IPAddr ou Networks through command line parameter or stdin
-- Extract networks based on IPAddr.
-- Extract domains from networks.
+* Implementing workflows with yaml 🔥
+* Adds support to work with multiples domains as target 🔥
+* Regex support 🥷
+* Adds support to work with IPv6 filters 🔥
+* Extract networks based on IP/Domain
+* Extract domains from networks.
+  
+# Workflows
 
 ## Installation
 
