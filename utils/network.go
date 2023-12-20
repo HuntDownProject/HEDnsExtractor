@@ -2,18 +2,21 @@ package utils
 
 import (
 	"bufio"
+	"io"
 	"net"
 	"net/http/httputil"
 	"os"
 	"regexp"
-	"strconv"
+	"strings"
 
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/retryablehttp-go"
 	fileutil "github.com/projectdiscovery/utils/file"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
-func contains(s []string, e string) bool {
+func Contains(s []string, e string) bool {
 	for _, a := range s {
 		if a == e {
 			return true
@@ -72,6 +75,39 @@ func Request(url string) string {
 	return str
 }
 
+func ParseHTML(body io.Reader) {
+	doc, err := goquery.NewDocumentFromReader(body)
+	if err != nil {
+		gologger.Fatal().Msgf("%s", err)
+	}
+
+	var re = regexp.MustCompile(`\/dns\/([^"]+)`)
+
+	doc.Find("#dnsrecords").Each(func(h int, div *goquery.Selection) {
+		div.Find("tr").Each(func(i int, tr *goquery.Selection) {
+			var result Result
+			tr.Find("td").Each(func(j int, td *goquery.Selection) {
+				td.Find("a").Each(func(k int, a *goquery.Selection) {
+					switch td.Index() {
+					case 0:
+						result.IPAddr = a.Text()
+					case 1:
+						result.PTR = a.Text()
+					case 2:
+						html, err := td.Html()
+						if err == nil {
+							for _, match := range re.FindAllStringSubmatch(html, -1) {
+								result.Domain = match[1]
+								Results[result.Domain] = result
+							}
+						}
+					}
+				})
+			})
+		})
+	})
+}
+
 func ExtractDomain(domain string, silent bool) {
 	var url = ""
 
@@ -83,9 +119,9 @@ func ExtractDomain(domain string, silent bool) {
 
 	var re = regexp.MustCompile(`(?m)href="/net/([^"]+)"`)
 	for _, match := range re.FindAllStringSubmatch(str, -1) {
-		if !contains(Networks, match[1]) {
-			if !silent {
-				gologger.Info().Msgf("[%s] %s\n", domain, match[1])
+		if !Contains(Networks, match[1]) {
+			if (!silent && !OptionCmd.Onlydomains) || OptionCmd.Onlynetworks {
+				gologger.Info().Msgf("[%s] network: %s\n", domain, match[1])
 			}
 			Networks = append(Networks, match[1])
 		}
@@ -104,9 +140,9 @@ func ExtractNetwork(ip string, silent bool, onlydomains bool, onlynetworks bool)
 	if ip != "" {
 		var re = regexp.MustCompile(`(?m)href="/net/([^"]+)"`)
 		for _, match := range re.FindAllStringSubmatch(str, -1) {
-			if !contains(Networks, match[1]) {
+			if !Contains(Networks, match[1]) {
 				if (!silent && !onlydomains) || onlynetworks {
-					gologger.Info().Msgf("[%s] %s\n", ip, match[1])
+					gologger.Info().Msgf("[%s] network: %s\n", ip, match[1])
 				}
 				Networks = append(Networks, match[1])
 			}
@@ -114,58 +150,36 @@ func ExtractNetwork(ip string, silent bool, onlydomains bool, onlynetworks bool)
 	}
 }
 
-func ExtractDomains(ipRange string, silent bool, vtscore bool, vtscoreValue uint64) {
-	var url = ""
-
-	if ipRange != "" {
-		url = urlBase + "net/" + ipRange
+func ExtractDomains(ipRange string) {
+	if ipRange == "" {
+		return
 	}
 
-	var str = Request(url)
+	var url = urlBase + "net/" + ipRange
+	var html = Request(url)
 
-	if ipRange != "" {
-		var re = regexp.MustCompile(`(?m)href="/dns/([^"]+)"`)
-		for _, match := range re.FindAllStringSubmatch(str, -1) {
-			if silent {
-				gologger.Silent().Msgf("%s\n", match[1])
-			} else {
-				if vtscore {
-					Score := GetVtReport(match[1])
-					if Score >= vtscoreValue {
-						gologger.Info().Msgf("[%s] domain: %s VT Score: %d\n", ipRange, match[1], Score)
-					}
-				} else {
-					gologger.Info().Msgf("[%s] domain: %s\n", ipRange, match[1])
-				}
-			}
-		}
-	}
+	ParseHTML(strings.NewReader(html))
 }
 
 func RunCrawler() {
-	if len(Domains) > 0 {
-		for i := range Domains {
-			ExtractDomain(Domains[i], OptionCmd.Silent)
-		}
+	for _, domain := range Domains {
+		gologger.Verbose().Msgf("Identifying networks for domain: %s", domain)
+		ExtractDomain(domain, OptionCmd.Silent)
 	}
 
-	if len(Hosts) > 0 {
-		for i := range Hosts {
-			ExtractNetwork(
-				Hosts[i],
-				OptionCmd.Silent,
-				OptionCmd.Onlydomains,
-				OptionCmd.Onlynetworks)
-		}
+	for _, host := range Hosts {
+		gologger.Verbose().Msgf("Identifying networks for IPv4: %s", host)
+		ExtractNetwork(
+			host,
+			OptionCmd.Silent,
+			OptionCmd.Onlydomains,
+			OptionCmd.Onlynetworks)
 	}
 
-	if len(Networks) > 0 && !OptionCmd.Onlynetworks {
-		for i := range Networks {
-			if score, err := strconv.ParseUint(OptionCmd.VtscoreValue, 10, 64); err == nil {
-				ExtractDomains(Networks[i], OptionCmd.Silent, OptionCmd.Vtscore, score)
-			} else {
-				gologger.Fatal().Msg("Invalid parameter value for vt-score")
-			}
+	if !OptionCmd.Onlynetworks {
+		for _, network := range Networks {
+			gologger.Verbose().Msgf("Identifying domains for network: %s", network)
+			ExtractDomains(network)
 		}
 	}
 }
