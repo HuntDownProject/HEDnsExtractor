@@ -4,10 +4,10 @@
 
 <h1 align="center">HEDnsExtractor</h1>
 <p align="center">
-  Raw html extractor from Hurricane Electric portal
+  A suite for hunting suspicious targets, expose domains and phishing discovery
 </p>
 <p align="center">
-  <a href="https://python.org/">
+  <a href="https://go.dev/">
     <img src="https://img.shields.io/github/go-mod/go-version/HuntDownProject/hednsextractor">
   </a>
     <a href="https://opensource.org">
@@ -17,9 +17,14 @@
 
 ## Features
 
-- Automatically identify IPAddr ou Networks through command line parameter or stdin
-- Extract networks based on IPAddr.
-- Extract domains from networks.
+* Implementing workflows with yaml 🔥
+* Adds support to work with multiples domains as target 🔥
+* Regex support 🥷
+* Adds support to work with IPv6 filters 🔥
+* Extract networks based on IP/Domain
+* Extract domains from networks.
+  
+# Workflows
 
 ## Installation
 
@@ -41,13 +46,17 @@ Usage:
 
 Flags:
 CONFIGURATION:
+   -config string  flag config file (default "/home/hunter/.config/hednsextractor/config.yaml")
+
+VIRUSTOTAL:
+   -vt                 show Virustotal score
    -vt-api-key string  Virustotal API Key
+   -vt-score string    Minimum Virustotal score to show (default "0")
 
 OTHER OPTIONS:
    -only-domains     show only domains
    -only-networks    show only networks
-   -vt               show Virustotal score
-   -vt-score string  Minimum Virustotal score to show (default "0")
+   -workflow string  Workflow config
    -target string    IP Address or Network to query
    -silent           show silent output
    -verbose          show verbose output
@@ -126,14 +135,12 @@ nslookup hackerone.com | awk '/Address: / {print $2}' | hednsextractor -only-dom
 
 And the output will be as below
 ```
-          _______  ______   _        _______  _______          _________ _______  _______  _______ _________ _______  _______ 
-|\     /|(  ____ \(  __  \ ( (    /|(  ____ \(  ____ \|\     /|\__   __/(  ____ )(  ___  )(  ____ \\__   __/(  ___  )(  ____ )
-| )   ( || (    \/| (  \  )|  \  ( || (    \/| (    \/( \   / )   ) (   | (    )|| (   ) || (    \/   ) (   | (   ) || (    )|
-| (___) || (__    | |   ) ||   \ | || (_____ | (__     \ (_) /    | |   | (____)|| (___) || |         | |   | |   | || (____)|
-|  ___  ||  __)   | |   | || (\ \) |(_____  )|  __)     ) _ (     | |   |     __)|  ___  || |         | |   | |   | ||     __)
-| (   ) || (      | |   ) || | \   |      ) || (       / ( ) \    | |   | (\ (   | (   ) || |         | |   | |   | || (\ (   
-| )   ( || (____/\| (__/  )| )  \  |/\____) || (____/\( /   \ )   | |   | ) \ \__| )   ( || (____/\   | |   | (___) || ) \ \__
-|/     \|(_______/(______/ |/    )_)\_______)(_______/|/     \|   )_(   |/   \__/|/     \|(_______/   )_(   (_______)|/   \__/
+╭╮╱╭┳━━━┳━━━╮╱╱╱╱╱╭━━━╮╱╱╭╮╱╱╱╱╱╱╱╱╭╮
+┃┃╱┃┃╭━━┻╮╭╮┃╱╱╱╱╱┃╭━━╯╱╭╯╰╮╱╱╱╱╱╱╭╯╰╮
+┃╰━╯┃╰━━╮┃┃┃┣━╮╭━━┫╰━━┳╮┣╮╭╋━┳━━┳━┻╮╭╋━━┳━╮
+┃╭━╮┃╭━━╯┃┃┃┃╭╮┫━━┫╭━━┻╋╋┫┃┃╭┫╭╮┃╭━┫┃┃╭╮┃╭╯
+┃┃╱┃┃╰━━┳╯╰╯┃┃┃┣━━┃╰━━┳╋╋┫╰┫┃┃╭╮┃╰━┫╰┫╰╯┃┃
+╰╯╱╰┻━━━┻━━━┻╯╰┻━━┻━━━┻╯╰┻━┻╯╰╯╰┻━━┻━┻━━┻╯
 
 [INF] Current hednsextractor version v1.0.0
 [INF] [104.16.0.0/12] domain: ohst.ltd VT Score: 0
