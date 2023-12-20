@@ -21,7 +21,7 @@ func main() {
 
 	flagSet := goflags.NewFlagSet()
 	flagSet.Marshal = true
-	flagSet.SetDescription("HEDnsExtractor - Raw html extractor from Hurricane Electric portal!")
+	flagSet.SetDescription("HEDnsExtractor - A suite for hunting suspicious targets, expose domains and phishing discovery!")
 	flagSet.BoolVar(&utils.OptionCmd.Onlydomains, "only-domains", false, "show only domains")
 	flagSet.BoolVar(&utils.OptionCmd.Onlynetworks, "only-networks", false, "show only networks")
 	flagSet.StringVar(&utils.OptionCmd.Workflow, "workflow", "", "Workflow config")
